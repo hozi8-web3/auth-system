@@ -87,10 +87,38 @@ npm run prisma:migrate
 npm run dev
 ```
 
-### 5. Access
+### 5. Create Admin Account
+
+```bash
+# Create admin user
+npx tsx scripts/create-admin.ts
+
+# Sign the admin role (required for admin API access)
+npx tsx scripts/sign-admin-role.ts
+```
+
+Default admin credentials:
+- **Email:** `admin@example.com`
+- **Password:** `Admin@123456!`
+
+### 6. Access
 
 - API: `http://localhost:3000`
 - Prisma Studio: `http://localhost:5555`
+
+### 7. Run Tests
+
+```bash
+npx tsx scripts/test-api.ts
+```
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Admin Setup Guide](docs/ADMIN-SETUP.md) | Creating and managing admin accounts |
+| [API Reference](docs/API-REFERENCE.md) | Complete API documentation |
+| [Environment Variables](.env.example) | All configuration options |
 
 ## 📡 API Endpoints
 
