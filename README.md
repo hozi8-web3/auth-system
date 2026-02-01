@@ -56,8 +56,8 @@ A military-grade, production-ready authentication server built with Node.js, Typ
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/yourusername/auth-server.git
-cd auth-server
+git clone https://github.com/hozi8-web3/auth-system.git
+cd auth-system
 npm install
 ```
 
