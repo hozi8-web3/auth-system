@@ -1,0 +1,315 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Permission {
+  // User permissions
+  READ_PROFILE
+  UPDATE_PROFILE
+  DELETE_ACCOUNT
+  
+  // Content permissions
+  CREATE_CONTENT
+  READ_CONTENT
+  UPDATE_CONTENT
+  DELETE_CONTENT
+  
+  // Admin permissions
+  MANAGE_USERS
+  MANAGE_ROLES
+  VIEW_AUDIT_LOGS
+  MANAGE_API_KEYS
+  SYSTEM_SETTINGS
+}
+
+enum OAuthProvider {
+  GOOGLE
+  GITHUB
+  MICROSOFT
+}
+
+// ============================================
+// USER MODEL
+// ============================================
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  passwordHash        String?   // Nullable for OAuth-only users
+  
+  // Profile
+  firstName           String?
+  lastName            String?
+  avatarUrl           String?
+  
+  // Role-Based Access Control
+  role                Role      @default(USER)
+  permissions         Permission[]
+  roleAssignedAt      DateTime?
+  roleAssignedBy      String?   // User ID who assigned the role
+  
+  // Admin protection - cryptographic role verification
+  roleSignature       String?   // HMAC signature of role + userId + timestamp
+  roleSignatureExpiry DateTime?
+  
+  // Email verification
+  emailVerified       Boolean   @default(false)
+  emailVerifyToken    String?
+  emailVerifyExpires  DateTime?
+  
+  // Password reset
+  passwordResetToken  String?
+  passwordResetExpires DateTime?
+  
+  // Magic link (passwordless)
+  magicLinkToken      String?
+  magicLinkExpires    DateTime?
+  
+  // Two-factor authentication
+  twoFactorEnabled    Boolean   @default(false)
+  twoFactorSecret     String?
+  backupCodes         String[]
+  
+  // Security
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt         DateTime?
+  lastLoginIp         String?
+  lastLoginCountry    String?
+  trustedCountries    String[]  @default([])
+  
+  // Notifications
+  pushTokens          String[]  @default([])
+  phoneNumber         String?
+  smsNotificationsEnabled Boolean @default(false)
+  emailNotificationsEnabled Boolean @default(true)
+  
+  // Timestamps
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  // Relations
+  sessions            Session[]
+  auditLogs           AuditLog[]
+  oauthAccounts       OAuthAccount[]
+  apiKeys             ApiKey[]
+  webauthnCredentials WebAuthnCredential[]
+  
+  @@index([email])
+  @@index([role])
+  @@index([emailVerifyToken])
+  @@index([passwordResetToken])
+  @@index([magicLinkToken])
+}
+
+// ============================================
+// OAUTH ACCOUNT MODEL
+// ============================================
+model OAuthAccount {
+  id              String        @id @default(uuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  provider        OAuthProvider
+  providerAccountId String
+  
+  // Token storage (encrypted)
+  accessToken     String?
+  refreshToken    String?
+  tokenExpiry     DateTime?
+  
+  // Profile data from provider
+  providerEmail   String?
+  providerName    String?
+  providerAvatar  String?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+// ============================================
+// API KEY MODEL
+// ============================================
+model ApiKey {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name            String    // Friendly name
+  keyHash         String    @unique // SHA-256 hash of the key
+  keyPrefix       String    // First 8 chars for identification
+  
+  // Permissions & Scopes
+  scopes          String[]  @default(["read"])
+  permissions     Permission[]
+  
+  // Rate limiting
+  rateLimit       Int       @default(1000) // Requests per hour
+  
+  // Security
+  lastUsedAt      DateTime?
+  lastUsedIp      String?
+  expiresAt       DateTime?
+  isActive        Boolean   @default(true)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([keyHash])
+  @@index([keyPrefix])
+}
+
+// ============================================
+// WEBAUTHN CREDENTIAL MODEL
+// ============================================
+model WebAuthnCredential {
+  id                  String   @id @default(uuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Credential data
+  credentialId        String   @unique // Base64URL encoded
+  publicKey           String   // Base64URL encoded public key
+  counter             Int      @default(0)
+  
+  // Device info
+  deviceType          String?  // platform, cross-platform
+  deviceName          String?  // User-defined name
+  
+  // Authenticator info
+  aaguid              String?  // Authenticator Attestation GUID
+  transports          String[] // usb, nfc, ble, internal
+  
+  // Usage
+  lastUsedAt          DateTime?
+  createdAt           DateTime @default(now())
+  
+  @@index([userId])
+  @@index([credentialId])
+}
+
+// ============================================
+// SESSION MODEL
+// ============================================
+model Session {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Token info
+  refreshTokenHash String  @unique
+  
+  // Device/location info
+  userAgent     String?
+  ipAddress     String?
+  deviceInfo    String?
+  country       String?
+  city          String?
+  
+  // Security
+  isValid       Boolean  @default(true)
+  expiresAt     DateTime
+  lastUsedAt    DateTime @default(now())
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  
+  @@index([userId])
+  @@index([refreshTokenHash])
+  @@index([expiresAt])
+}
+
+// ============================================
+// AUDIT LOG MODEL
+// ============================================
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Actor info (for admin actions)
+  actorId     String?
+  actorRole   Role?
+  
+  // Event details
+  action      String
+  status      String
+  severity    String   @default("INFO") // INFO, WARNING, CRITICAL
+  details     String?
+  
+  // Request info
+  ipAddress   String?
+  userAgent   String?
+  country     String?
+  
+  // Timestamp
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([actorId])
+  @@index([action])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+// ============================================
+// RATE LIMIT MODEL
+// ============================================
+model RateLimit {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  count       Int      @default(0)
+  expiresAt   DateTime
+  
+  @@index([key])
+  @@index([expiresAt])
+}
+
+// ============================================
+// LOGIN NOTIFICATION MODEL
+// ============================================
+model LoginNotification {
+  id          String   @id @default(uuid())
+  userId      String
+  
+  // Event
+  type        String   // NEW_DEVICE, NEW_COUNTRY, SUSPICIOUS_LOGIN
+  message     String
+  
+  // Context
+  ipAddress   String?
+  country     String?
+  device      String?
+  
+  // Status
+  isRead      Boolean  @default(false)
+  emailSent   Boolean  @default(false)
+  smsSent     Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+}

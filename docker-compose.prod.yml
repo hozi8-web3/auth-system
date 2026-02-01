@@ -1,0 +1,130 @@
+# ============================================
+# PRODUCTION DOCKER COMPOSE
+# ============================================
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+#
+# SECURITY: Only Nginx ports (80/443) are exposed to host
+# All other services communicate ONLY through internal Docker network
+# ============================================
+
+version: '3.8'
+
+services:
+  # ----------------------------------------
+  # Nginx Reverse Proxy (ONLY PUBLIC ENTRY POINT)
+  # ----------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: auth-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - api
+    networks:
+      - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+
+  # ----------------------------------------
+  # API Server (Internal Only)
+  # ----------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: auth-api
+    restart: always
+    expose:
+      - "${PORT:-3000}"
+    volumes:
+      - ./keys:/app/keys:ro
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${PORT:-3000}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  # ----------------------------------------
+  # PostgreSQL Database (Internal Only)
+  # ----------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: auth-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-auth_db}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  # ----------------------------------------
+  # Redis Cache (Internal Only)
+  # ----------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: auth-redis
+    restart: always
+    command: redis-server ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD} --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - auth-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  auth-network:
+    driver: bridge

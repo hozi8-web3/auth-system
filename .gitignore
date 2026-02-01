@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment files (NEVER commit these!)
+.env
+.env.local
+.env.*.local
+
+# RSA Keys (CRITICAL - NEVER commit!)
+keys/
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+
+# Prisma
+prisma/migrations/**/migration_lock.toml
+
+# Docker
+docker/nginx/certs/
+
+# Temporary files
+tmp/
+temp/
+keys
