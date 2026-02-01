@@ -2,10 +2,12 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
 import config, { validateConfig } from './config/index.js';
 import { connectDatabase, disconnectDatabase } from './config/database.js';
 import { connectRedis, disconnectRedis } from './config/redis.js';
 import { generalLimiter } from './middleware/rateLimit.middleware.js';
+import { swaggerSpec } from './config/swagger.js';
 import authRoutes from './routes/auth.routes.js';
 import oauthRoutes from './routes/oauth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
@@ -68,6 +70,12 @@ app.use(
 app.use(
     cors({
         origin: (origin, callback) => {
+            // In development, allow all origins (including file:// which sends null)
+            if (config.env === 'development') {
+                callback(null, true);
+                return;
+            }
+
             // Allow requests with no origin (mobile apps, curl, etc.)
             if (!origin) {
                 callback(null, true);
@@ -118,6 +126,28 @@ app.get('/health', (_req: Request, res: Response) => {
         timestamp: new Date().toISOString(),
         version: process.env.npm_package_version || '1.0.0',
     });
+});
+
+// ============================================
+// SWAGGER API DOCUMENTATION
+// ============================================
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customCss: `
+        .swagger-ui .topbar { display: none; }
+        .swagger-ui .info { margin: 30px 0; }
+        .swagger-ui .info .title { color: #8b5cf6; }
+        .swagger-ui .opblock.opblock-post { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .swagger-ui .opblock.opblock-get { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .swagger-ui .opblock.opblock-delete { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        .swagger-ui .opblock.opblock-put { border-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+    `,
+    customSiteTitle: 'Enterprise Auth API Docs',
+}));
+
+// JSON spec endpoint
+app.get('/docs.json', (_req: Request, res: Response) => {
+    res.json(swaggerSpec);
 });
 
 // ============================================

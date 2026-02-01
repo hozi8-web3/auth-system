@@ -42,3 +42,6 @@ docker/nginx/certs/
 tmp/
 temp/
 keys
+
+# Demo (for local testing/screenshots)
+demo/

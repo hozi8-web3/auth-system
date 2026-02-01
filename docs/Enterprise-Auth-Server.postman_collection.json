@@ -1,0 +1,1034 @@
+{
+    "info": {
+        "name": "Enterprise Auth Server",
+        "description": "Complete API collection for Enterprise Authentication Server with JWT, OAuth2, 2FA, and more.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000/api/v1"
+        },
+        {
+            "key": "accessToken",
+            "value": ""
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{accessToken}}",
+                "type": "string"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "🔐 Authentication",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass@123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Register a new user account"
+                    }
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.success && jsonData.data.accessToken) {",
+                                    "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                                    "    console.log('Access token saved!');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Admin@123456!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login with email and password. Token is automatically saved."
+                    }
+                },
+                {
+                    "name": "Login with 2FA",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Admin@123456!\",\n  \"twoFactorCode\": \"123456\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login with 2FA code"
+                    }
+                },
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        },
+                        "description": "Get authenticated user profile"
+                    }
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/refresh",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "refresh"
+                            ]
+                        },
+                        "description": "Refresh access token using refresh token cookie"
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/logout",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "logout"
+                            ]
+                        },
+                        "description": "Logout and invalidate tokens"
+                    }
+                },
+                {
+                    "name": "Change Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"Admin@123456!\",\n  \"newPassword\": \"NewSecure@456!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        },
+                        "description": "Change user password"
+                    }
+                },
+                {
+                    "name": "Forgot Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/forgot-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "forgot-password"
+                            ]
+                        },
+                        "description": "Request password reset email"
+                    }
+                },
+                {
+                    "name": "Reset Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"token\": \"reset-token-from-email\",\n  \"password\": \"NewSecure@789!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/reset-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "reset-password"
+                            ]
+                        },
+                        "description": "Reset password with token from email"
+                    }
+                },
+                {
+                    "name": "Revoke All Sessions",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/sessions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "sessions"
+                            ]
+                        },
+                        "description": "Revoke all active sessions"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🔒 Two-Factor Authentication",
+            "item": [
+                {
+                    "name": "Setup 2FA",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/2fa/setup",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "2fa",
+                                "setup"
+                            ]
+                        },
+                        "description": "Get QR code and secret for 2FA setup"
+                    }
+                },
+                {
+                    "name": "Enable 2FA",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"code\": \"123456\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/2fa/enable",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "2fa",
+                                "enable"
+                            ]
+                        },
+                        "description": "Enable 2FA with TOTP code"
+                    }
+                },
+                {
+                    "name": "Disable 2FA",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"code\": \"123456\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/2fa/disable",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "2fa",
+                                "disable"
+                            ]
+                        },
+                        "description": "Disable 2FA"
+                    }
+                },
+                {
+                    "name": "Verify 2FA Code",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tempToken\": \"temp-token-from-login\",\n  \"code\": \"123456\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/2fa/verify",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "2fa",
+                                "verify"
+                            ]
+                        },
+                        "description": "Verify 2FA code during login"
+                    }
+                },
+                {
+                    "name": "Regenerate Backup Codes",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"code\": \"123456\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/2fa/backup-codes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "2fa",
+                                "backup-codes"
+                            ]
+                        },
+                        "description": "Generate new backup codes"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🌐 OAuth2 Social Login",
+            "item": [
+                {
+                    "name": "Google - Initiate",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/oauth/google",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "oauth",
+                                "google"
+                            ]
+                        },
+                        "description": "Start Google OAuth flow"
+                    }
+                },
+                {
+                    "name": "GitHub - Initiate",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/oauth/github",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "oauth",
+                                "github"
+                            ]
+                        },
+                        "description": "Start GitHub OAuth flow"
+                    }
+                },
+                {
+                    "name": "Microsoft - Initiate",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/oauth/microsoft",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "oauth",
+                                "microsoft"
+                            ]
+                        },
+                        "description": "Start Microsoft OAuth flow"
+                    }
+                },
+                {
+                    "name": "Get Linked Accounts",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/oauth/accounts",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "oauth",
+                                "accounts"
+                            ]
+                        },
+                        "description": "Get all linked OAuth accounts"
+                    }
+                },
+                {
+                    "name": "Unlink Account",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/oauth/google/unlink",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "oauth",
+                                "google",
+                                "unlink"
+                            ]
+                        },
+                        "description": "Unlink OAuth account"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "✨ Passwordless",
+            "item": [
+                {
+                    "name": "Request Magic Link",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/passwordless/magic-link/request",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "passwordless",
+                                "magic-link",
+                                "request"
+                            ]
+                        },
+                        "description": "Request magic link email"
+                    }
+                },
+                {
+                    "name": "Verify Magic Link",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"token\": \"magic-link-token\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/passwordless/magic-link/verify",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "passwordless",
+                                "magic-link",
+                                "verify"
+                            ]
+                        },
+                        "description": "Verify magic link token"
+                    }
+                },
+                {
+                    "name": "WebAuthn - Register Options",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/passwordless/webauthn/register/options",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "passwordless",
+                                "webauthn",
+                                "register",
+                                "options"
+                            ]
+                        },
+                        "description": "Get WebAuthn registration options"
+                    }
+                },
+                {
+                    "name": "WebAuthn - Login Options",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/passwordless/webauthn/login/options",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "passwordless",
+                                "webauthn",
+                                "login",
+                                "options"
+                            ]
+                        },
+                        "description": "Get WebAuthn login options"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🔑 API Keys",
+            "item": [
+                {
+                    "name": "Create API Key",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"My API Key\",\n  \"scopes\": [\"read\", \"write\"],\n  \"expiresInDays\": 30\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api-keys",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api-keys"
+                            ]
+                        },
+                        "description": "Create a new API key"
+                    }
+                },
+                {
+                    "name": "List API Keys",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api-keys",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api-keys"
+                            ]
+                        },
+                        "description": "List all API keys"
+                    }
+                },
+                {
+                    "name": "Get API Key",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api-keys/:keyId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api-keys",
+                                ":keyId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "keyId",
+                                    "value": "key-id-here"
+                                }
+                            ]
+                        },
+                        "description": "Get API key details"
+                    }
+                },
+                {
+                    "name": "Update API Key",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Name\",\n  \"isActive\": false\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api-keys/:keyId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api-keys",
+                                ":keyId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "keyId",
+                                    "value": "key-id-here"
+                                }
+                            ]
+                        },
+                        "description": "Update API key"
+                    }
+                },
+                {
+                    "name": "Revoke API Key",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api-keys/:keyId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api-keys",
+                                ":keyId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "keyId",
+                                    "value": "key-id-here"
+                                }
+                            ]
+                        },
+                        "description": "Revoke/delete API key"
+                    }
+                },
+                {
+                    "name": "Rotate API Key",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api-keys/:keyId/rotate",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api-keys",
+                                ":keyId",
+                                "rotate"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "keyId",
+                                    "value": "key-id-here"
+                                }
+                            ]
+                        },
+                        "description": "Rotate API key secret"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "👑 Admin",
+            "item": [
+                {
+                    "name": "Get System Stats",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/stats",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "stats"
+                            ]
+                        },
+                        "description": "Get system statistics (requires admin role)"
+                    }
+                },
+                {
+                    "name": "List Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/users?page=1&limit=20",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "users"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        },
+                        "description": "List all users (paginated)"
+                    }
+                },
+                {
+                    "name": "Get User Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/users/:userId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "users",
+                                ":userId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "user-id-here"
+                                }
+                            ]
+                        },
+                        "description": "Get detailed user information"
+                    }
+                },
+                {
+                    "name": "Update User Role",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"role\": \"MODERATOR\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/users/:userId/role",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "users",
+                                ":userId",
+                                "role"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "user-id-here"
+                                }
+                            ]
+                        },
+                        "description": "Update user role (requires SUPER_ADMIN)"
+                    }
+                },
+                {
+                    "name": "Lock User",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"durationMinutes\": 60,\n  \"reason\": \"Suspicious activity\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/users/:userId/lock",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "users",
+                                ":userId",
+                                "lock"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "user-id-here"
+                                }
+                            ]
+                        },
+                        "description": "Lock user account"
+                    }
+                },
+                {
+                    "name": "Unlock User",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/users/:userId/unlock",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "users",
+                                ":userId",
+                                "unlock"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "user-id-here"
+                                }
+                            ]
+                        },
+                        "description": "Unlock user account"
+                    }
+                },
+                {
+                    "name": "Force Password Reset",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"newPassword\": \"TempPass@123!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/users/:userId/reset-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "users",
+                                ":userId",
+                                "reset-password"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "user-id-here"
+                                }
+                            ]
+                        },
+                        "description": "Force reset user password (SUPER_ADMIN only)"
+                    }
+                },
+                {
+                    "name": "Get Audit Logs",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/audit-logs?limit=50",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "audit-logs"
+                            ],
+                            "query": [
+                                {
+                                    "key": "limit",
+                                    "value": "50"
+                                }
+                            ]
+                        },
+                        "description": "Get system audit logs"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "💓 Health",
+            "item": [
+                {
+                    "name": "Health Check",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:3000/health",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "health"
+                            ]
+                        },
+                        "description": "Check server health status"
+                    }
+                }
+            ]
+        }
+    ]
+}

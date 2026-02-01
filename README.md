@@ -116,8 +116,10 @@ npx tsx scripts/test-api.ts
 
 | Document | Description |
 |----------|-------------|
+| [Swagger UI](http://localhost:3000/docs) | Interactive API documentation |
 | [Admin Setup Guide](docs/ADMIN-SETUP.md) | Creating and managing admin accounts |
 | [API Reference](docs/API-REFERENCE.md) | Complete API documentation |
+| [Postman Collection](docs/Enterprise-Auth-Server.postman_collection.json) | Import into Postman |
 | [Environment Variables](.env.example) | All configuration options |
 
 ## 📡 API Endpoints
